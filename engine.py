@@ -1,4 +1,5 @@
 from typing import Iterable, Any
+import numpy as np
 
 from tcod.context import Context
 from tcod.console import Console
@@ -18,7 +19,8 @@ class Engine:
 
     def handle_enemy_turns(self) -> None:
         for entity in self.game_map.entities - {self.player}:
-            print(f'The {entity.name} wonders when it will get to take a real turn.')
+            pass
+            #print(f'The {entity.name} wonders when it will get to take a real turn.')
 
     def handle_events(self, events: Iterable[Any]) -> None:
         for event in events:
@@ -38,6 +40,11 @@ class Engine:
             (self.player.x, self.player.y),
             radius=8,
         )
+
+        self.game_map.memory[self.game_map.visible] = 60
+
+        self.game_map.memory = np.maximum(self.game_map.memory - 1, 0)
+        self.game_map.explored[self.game_map.memory == 0] = False
         # If a tile is "visible" it should be added to "explored".
         self.game_map.explored |= self.game_map.visible
 

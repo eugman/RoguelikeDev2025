@@ -18,8 +18,7 @@ class GameMap:
 
         self.visible = np.full((width, height), fill_value=False, order="F")  # Tiles the player can currently see
         self.explored = np.full((width, height), fill_value=False, order="F")  # Tiles the player has seen before
-
-        self.tiles[30:33, 22] = tile_types.wall
+        self.memory = np.full((width, height), fill_value=0, order="F")  # Tiles the player has recent memory of
 
     def get_blocking_entity_at_location(self, location_x: int, location_y: int) -> Optional[Entity]:
         for entity in self.entities:
