@@ -49,14 +49,33 @@ class HostileEnemy(BaseAI):
     def __init__(self, entity: Actor):
         super().__init__(entity)
         self.path: List[Tuple[int, int]] = []
+        self.friend: Actor = None
 
     def perform(self) -> None:
         target = self.engine.player
         dx = target.x - self.entity.x
         dy = target.y - self.entity.y
-        distance = max(abs(dx), abs(dy))  # Chebyshev distance.
+        distance = max(abs(dx), abs(dy))  # Chebyshev distance.       
 
-        if self.engine.game_map.visible[self.entity.x, self.entity.y]:
+        #flee logic 
+        if self.entity.fighter.hp <= 5 :
+            
+            if not self.friend:
+
+                entities_sorted_for_fleeing = sorted(
+                self.engine.game_map.actors, key=lambda x: abs(x.x - self.entity.x) + abs(x.y - self.entity.y), reverse=True
+                )
+            
+                self.friend = next(
+                    (e for e in entities_sorted_for_fleeing if e.fighter and e.fighter.hp > 5 and e != self.entity), None
+                )
+
+                #print("Friend at", friend.x, friend.y if friend else "None")
+
+            self.path = self.get_path_to(self.friend.x, self.friend.y) if self.friend else []
+
+
+        elif self.engine.game_map.visible[self.entity.x, self.entity.y]:
             if distance <= 1:
                 return MeleeAction(self.entity, dx, dy).perform()
 
