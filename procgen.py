@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import copy
 import random
 from typing import Iterator, List, Tuple, TYPE_CHECKING
+import numpy as np
 
 import tcod
 
@@ -121,4 +123,47 @@ def generate_dungeon(
         # Finally, append the new room to the list.
         rooms.append(new_room)
 
+    caveify_dungeon(dungeon, iterations=5)
     return dungeon
+
+def caveify_dungeon(dungeon: GameMap, iterations: int = 5) -> None:
+    """Apply the cellular automata algorithm to create caves."""
+
+    new_tiles = copy.deepcopy(dungeon.tiles)
+
+    for x in range(1, dungeon.width - 1):
+        for y in range(1, dungeon.height - 1):
+            new_tiles[x, y] = (
+                tile_types.wall if random.random() < 0.8 else tile_types.floor
+            )
+
+    for x in range(dungeon.width):
+        for y in range(dungeon.height):
+            if dungeon.tiles[x, y] == tile_types.floor:
+                new_tiles[x, y] = tile_types.floor
+
+    for _ in range(iterations):
+        for x in range(1, dungeon.width - 1):
+            for y in range(1, dungeon.height - 1):
+                # Count the number of adjacent floor tiles.
+                adjacent_walls = sum(
+                    new_tiles[x + dx, y + dy] == tile_types.wall
+                    for dx in (-1, 0, 1)
+                    for dy in (-1, 0, 1)
+                    if (dx != 0 or dy != 0)
+                )
+
+                if dungeon.tiles[x, y] == tile_types.floor:
+                    if adjacent_walls >= 5:
+                        new_tiles[x, y] = tile_types.wall
+                else:  # It's a wall tile.
+                    if adjacent_walls <= 3:
+                        new_tiles[x, y] = tile_types.floor
+
+    # Preserve original floor tiles (rooms) by reverting any new walls back to floor.
+    for x in range(dungeon.width):
+        for y in range(dungeon.height):
+            if dungeon.tiles[x, y] == tile_types.floor:
+                new_tiles[x, y] = tile_types.floor
+
+    dungeon.tiles = new_tiles
