@@ -6,13 +6,11 @@ import numpy as np  # type: ignore
 import tcod
 
 from actions import Action, MeleeAction, MovementAction, WaitAction
-from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
     from entity import Actor
 
-class BaseAI(Action, BaseComponent):
-    entity: Actor
+class BaseAI(Action):
     def perform(self) -> None:
         raise NotImplementedError()
 
@@ -49,13 +47,15 @@ class HostileEnemy(BaseAI):
     def __init__(self, entity: Actor):
         super().__init__(entity)
         self.path: List[Tuple[int, int]] = []
-        self.friend: Actor = None
+        self.friend: Actor | None = None
 
     def perform(self) -> None:
         target = self.engine.player
         dx = target.x - self.entity.x
         dy = target.y - self.entity.y
         distance = max(abs(dx), abs(dy))  # Chebyshev distance.       
+
+        
 
         #flee logic 
         if self.entity.fighter.hp <= 5 :
